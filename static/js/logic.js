@@ -10,8 +10,8 @@ d3.json(link).then(function(data) {
 
 // Creating map object
 var myMap = L.map("mapid", {
-    center: [44.986656, -93.258133],//minneapolis
-    zoom: 2
+    center: [ 40.758701, -111.876183],//salt lake city
+    zoom: 5
   });
 
 // Adding tile layer
@@ -25,9 +25,12 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 
+
+
 var long_list=[]
 var lat_list=[]
 var location_list=[]
+var depth_list=[]
 
 //check data
 d3.json(link).then(function(data) {
@@ -35,17 +38,73 @@ d3.json(link).then(function(data) {
         long_list.push(data.features[i].geometry.coordinates[0])
         lat_list.push(data.features[i].geometry.coordinates[1])
         location_list.push([data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]])
+        depth_list.push(data.features[i].geometry.coordinates[2])
+
         var location=[data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]]
         var radius =data.features[i].properties.mag
+        var depth = data.features[i].geometry.coordinates[2]
+
+        var color = ""
+        if (depth <10){
+            color='#DAF7A6';
+        }
+        else if (depth<30){
+            color='#FFC300';
+        }
+        else if (depth<50){
+            color='#FF5733';
+        }
+        else if (depth<70){
+            color='#C70039';
+        }
+        else if (depth<90){
+            color='#900C3F';
+        }
+        else{
+            color='#581845';
+        }
+        
         L.circle(location,{
             fillOpacity: 0.75,
-            color: "red",
-            fillColor: 'red',
+            color:'black',
+            weight:1,
+            fillColor: color,
             // Adjust radius
             radius: radius*15000
           })
         .addTo(myMap);
     }
+    
 })
 
-console.log(location_list)
+
+function getColor(d) {
+    return d < 10 ? '#DAF7A6' :
+           d < 30  ? '#FFC300' :
+           d < 50  ? '#FF5733' :
+           d < 70  ? '#C70039' :
+           d < 90   ? '#900C3F' :
+                        '#581845' 
+           ;
+}
+
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (myMap) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [-10, 10, 30, 50, 70, 90],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(myMap);
