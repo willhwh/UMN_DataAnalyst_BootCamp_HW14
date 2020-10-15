@@ -26,6 +26,20 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 
 
 
+function createFeatures(earthquakeData) {
+
+    // Define a function we want to run once for each feature in the features array
+    // Give each feature a popup describing the place and time of the earthquake
+    function onEachFeature(feature, layer) {
+      
+      
+      layer.bindPopup("<h3>" + feature.properties.place +
+        "</h3><hr><p>" + new Date(feature.properties.time)// create new format of time
+           + "<strong>" +feature.properties.mag+"</strong> </p>");
+    }
+}
+
+
 
 var long_list=[]
 var lat_list=[]
@@ -72,10 +86,20 @@ d3.json(link).then(function(data) {
             // Adjust radius
             radius: radius*15000
           })
-        .addTo(myMap);
+        .addTo(myMap).bindPopup("<h3>" + data.features[i].properties.place +
+            "</h3><strong> Magnitude: " +data.features[i].properties.mag+"</strong> <hr><p>" + new Date(data.features[i].properties.time)// create new format of time
+               + "</p>");
+
+        
+
+
     }
     
 })
+
+
+
+
 
 
 function getColor(d) {
