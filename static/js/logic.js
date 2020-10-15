@@ -25,59 +25,46 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 
-
-function createFeatures(earthquakeData) {
-
-    // Define a function we want to run once for each feature in the features array
-    // Give each feature a popup describing the place and time of the earthquake
-    function onEachFeature(feature, layer) {
-      
-      
-      layer.bindPopup("<h3>" + feature.properties.place +
-        "</h3><hr><p>" + new Date(feature.properties.time)// create new format of time
-           + "<strong>" +feature.properties.mag+"</strong> </p>");
+//color selector function
+function colorSelector(depth){
+    var color=''
+    if (depth <10){
+        color='#DAF7A6';
     }
+    else if (depth<30){
+        color='#FFC300';
+    }
+    else if (depth<50){
+        color='#FF5733';
+    }
+    else if (depth<70){
+        color='#C70039';
+    }
+    else if (depth<90){
+        color='#900C3F';
+    }
+    else{
+        color='#581845';
+    }
+    return color
 }
 
 
 
-var long_list=[]
-var lat_list=[]
-var location_list=[]
-var depth_list=[]
+
 
 //check data
 d3.json(link).then(function(data) {
     for (i=0;i<data.features.length;i++){
-        long_list.push(data.features[i].geometry.coordinates[0])
-        lat_list.push(data.features[i].geometry.coordinates[1])
-        location_list.push([data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]])
-        depth_list.push(data.features[i].geometry.coordinates[2])
-
+        //catch the needed information
         var location=[data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]]
         var radius =data.features[i].properties.mag
         var depth = data.features[i].geometry.coordinates[2]
 
-        var color = ""
-        if (depth <10){
-            color='#DAF7A6';
-        }
-        else if (depth<30){
-            color='#FFC300';
-        }
-        else if (depth<50){
-            color='#FF5733';
-        }
-        else if (depth<70){
-            color='#C70039';
-        }
-        else if (depth<90){
-            color='#900C3F';
-        }
-        else{
-            color='#581845';
-        }
+        //the color selector
+        color=colorSelector(depth)
         
+        //put circle to the layer
         L.circle(location,{
             fillOpacity: 0.75,
             color:'black',
@@ -86,16 +73,12 @@ d3.json(link).then(function(data) {
             // Adjust radius
             radius: radius*15000
           })
+          //add popup to the circle
         .addTo(myMap).bindPopup("<h3>" + data.features[i].properties.place +
             "</h3><strong> Magnitude: " +data.features[i].properties.mag+"</strong> <hr><p>" + new Date(data.features[i].properties.time)// create new format of time
                + "</p>");
-
-        
-
-
-    }
-    
-})
+    };
+});
 
 
 
@@ -117,9 +100,8 @@ var legend = L.control({position: 'bottomright'});
 
 legend.onAdd = function (myMap) {
 
-    var div = L.DomUtil.create('div', 'info legend'),
-        grades = [-10, 10, 30, 50, 70, 90],
-        labels = [];
+    var div = L.DomUtil.create('div', 'info legend');
+    var grades = [-10, 10, 30, 50, 70, 90];
 
     // loop through our density intervals and generate a label with a colored square for each interval
     for (var i = 0; i < grades.length; i++) {
