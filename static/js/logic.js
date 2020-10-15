@@ -25,3 +25,27 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 
+var long_list=[]
+var lat_list=[]
+var location_list=[]
+
+//check data
+d3.json(link).then(function(data) {
+    for (i=0;i<data.features.length;i++){
+        long_list.push(data.features[i].geometry.coordinates[0])
+        lat_list.push(data.features[i].geometry.coordinates[1])
+        location_list.push([data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]])
+        var location=[data.features[i].geometry.coordinates[1],data.features[i].geometry.coordinates[0]]
+        var radius =data.features[i].properties.mag
+        L.circle(location,{
+            fillOpacity: 0.75,
+            color: "red",
+            fillColor: 'red',
+            // Adjust radius
+            radius: radius*15000
+          })
+        .addTo(myMap);
+    }
+})
+
+console.log(location_list)
