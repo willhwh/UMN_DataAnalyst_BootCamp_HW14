@@ -1,6 +1,6 @@
 //data path
 var link ='static/data/data.geojson'
-
+var link1 ='static/data/plate.geojson'
 
 //check data
 d3.json(link).then(function(data) {
@@ -114,3 +114,30 @@ legend.onAdd = function (myMap) {
 };
 
 legend.addTo(myMap);
+
+
+//check data
+d3.json(link1).then(function(data) {
+    console.log(data.features)
+});
+
+
+d3.json(link1).then(function(data) {
+    for (i=0;i<data.features.length;i++){
+        var polylinePoints = [];
+        var lines=(data.features[i].geometry.coordinates[0]);
+        for (j=0;j<lines.length;j++){
+            var dots=lines[j]
+            polylinePoints.push([dots[1],dots[0]])
+        };
+        //console.log(polylinePoints);
+        L.polyline(polylinePoints,{
+            color: 'red',
+            weight: 3,
+            opacity: 0.5,
+            smoothFactor: 1
+        }).addTo(myMap); 
+    };
+});
+
+ 
