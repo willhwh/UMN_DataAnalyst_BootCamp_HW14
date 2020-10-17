@@ -7,22 +7,54 @@ d3.json(link).then(function(data) {
     console.log(data.features)
 })
 
+//basic layers
+var light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  maxZoom: 18,
+  id: "light-v10",
+  accessToken: API_KEY
+});
 
-// Creating map object
-var myMap = L.map("mapid", {
-    center: [ 40.758701, -111.876183],//salt lake city
-    zoom: 5
-  });
+var dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  maxZoom: 18,
+  id: "dark-v10",
+  accessToken: API_KEY
+});
+ 
 
-// Adding tile layer
-L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+var color = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
   tileSize: 512,
   maxZoom: 12,
   zoomOffset: -1,
   id: "mapbox/streets-v11",
   accessToken: API_KEY
-}).addTo(myMap);
+});
+
+// Only one base layer can be shown at a time
+var baseMaps = {
+    Color: color,
+    Light: light,
+    Dark: dark
+  };
+
+var layers = {
+    Earthquake: new L.LayerGroup(),
+    Plate: new L.LayerGroup()
+};
+
+var overlays = {
+    "Earthquake": layers.Earthquake,
+    "Plate": layers.Plate
+  };
+
+// Creating map object
+var myMap = L.map("mapid", {
+    center: [ 40.758701, -111.876183],//salt lake city
+    zoom: 5,
+    layers: [color,layers.Earthquake]
+  });
 
 
 //color selector function
@@ -47,13 +79,11 @@ function colorSelector(depth){
         color='#581845';
     }
     return color
-}
+};
 
 
+  
 
-
-
-//check data
 d3.json(link).then(function(data) {
     for (i=0;i<data.features.length;i++){
         //catch the needed information
@@ -74,11 +104,15 @@ d3.json(link).then(function(data) {
             radius: radius*15000
           })
           //add popup to the circle
-        .addTo(myMap).bindPopup("<h3>" + data.features[i].properties.place +
+            .bindPopup("<h3>" + data.features[i].properties.place +
             "</h3><strong> Magnitude: " +data.features[i].properties.mag+"</strong> <hr><p>" + new Date(data.features[i].properties.time)// create new format of time
-               + "</p>");
+               + "</p>")
+            .addTo(layers.Earthquake);
     };
+    
 });
+
+
 
 
 
@@ -136,8 +170,10 @@ d3.json(link1).then(function(data) {
             weight: 3,
             opacity: 0.5,
             smoothFactor: 1
-        }).addTo(myMap); 
+        }).addTo(layers.Plate); 
     };
 });
 
- 
+L.control.layers(baseMaps,overlays,{
+    collapsed: false
+}).addTo(myMap);
