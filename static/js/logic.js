@@ -32,7 +32,7 @@ var color = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}
   accessToken: API_KEY
 });
 
-// Only one base layer can be shown at a time
+//basemaps and overlays
 var baseMaps = {
     Color: color,
     Light: light,
@@ -49,13 +49,17 @@ var overlays = {
     "Plate": layers.Plate
   };
 
-// Creating map object
+// Creating default map object
 var myMap = L.map("mapid", {
     center: [ 40.758701, -111.876183],//salt lake city
     zoom: 5,
     layers: [color,layers.Earthquake]
   });
 
+//layer controlers
+L.control.layers(baseMaps,overlays,{
+    collapsed: false
+}).addTo(myMap);
 
 //color selector function
 function colorSelector(depth){
@@ -82,8 +86,8 @@ function colorSelector(depth){
 };
 
 
-  
 
+//earthquake layer
 d3.json(link).then(function(data) {
     for (i=0;i<data.features.length;i++){
         //catch the needed information
@@ -114,11 +118,7 @@ d3.json(link).then(function(data) {
 
 
 
-
-
-
-
-
+//legend section
 function getColor(d) {
     return d < 10 ? '#DAF7A6' :
            d < 30  ? '#FFC300' :
@@ -129,11 +129,10 @@ function getColor(d) {
            ;
 }
 
-
+//legend position
 var legend = L.control({position: 'bottomright'});
 
 legend.onAdd = function (myMap) {
-
     var div = L.DomUtil.create('div', 'info legend');
     var grades = [-10, 10, 30, 50, 70, 90];
 
@@ -143,19 +142,12 @@ legend.onAdd = function (myMap) {
             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
             grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
     }
-
     return div;
 };
 
 legend.addTo(myMap);
 
-
-//check data
-d3.json(link1).then(function(data) {
-    console.log(data.features)
-});
-
-
+//plate section
 d3.json(link1).then(function(data) {
     for (i=0;i<data.features.length;i++){
         var polylinePoints = [];
@@ -174,6 +166,6 @@ d3.json(link1).then(function(data) {
     };
 });
 
-L.control.layers(baseMaps,overlays,{
-    collapsed: false
-}).addTo(myMap);
+
+
+
